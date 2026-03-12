@@ -1,0 +1,70 @@
+/* src/styles.css */
+.tool-form {
+  background-color: #f9f9f9;
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid #eaeaea;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.dept-item {
+  display: flex;
+  align-items: center;
+}
+
+.dept-item input[type="radio"] {
+  margin: 0;
+}
+
+.dept-item label {
+  margin-left: 10px;
+  text-transform: uppercase;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+button {
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primary-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+}
+
+.primary-btn:hover {
+  background-color: #0056b3;
+}
+
+.secondary-btn {
+  background-color: #f8f9fa;
+  color: #333;
+  padding: 12px 24px;
+  border: 1px solid #ddd;
+}
+
+.secondary-btn:hover {
+  background-color: #e2e6ea;
+}
