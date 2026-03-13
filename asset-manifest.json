@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/login-creation/static/css/main.3e8b5136.css",
-    "main.js": "/login-creation/static/js/main.6931e7a0.js",
+    "main.css": "/login-creation/static/css/main.250ba08c.css",
+    "main.js": "/login-creation/static/js/main.5c8a5cb0.js",
     "index.html": "/login-creation/index.html",
-    "main.3e8b5136.css.map": "/login-creation/static/css/main.3e8b5136.css.map",
-    "main.6931e7a0.js.map": "/login-creation/static/js/main.6931e7a0.js.map"
+    "main.250ba08c.css.map": "/login-creation/static/css/main.250ba08c.css.map",
+    "main.5c8a5cb0.js.map": "/login-creation/static/js/main.5c8a5cb0.js.map"
   },
   "entrypoints": [
-    "static/css/main.3e8b5136.css",
-    "static/js/main.6931e7a0.js"
+    "static/css/main.250ba08c.css",
+    "static/js/main.5c8a5cb0.js"
   ]
 }
