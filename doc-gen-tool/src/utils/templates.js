@@ -37,17 +37,18 @@ export const getTemplates = (data) => {
     <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
       Login na rede e e-mail institucional para <strong>${data.name}</strong> foram criados.<br/><br/>
       <strong>Informações da conta:</strong><br/>
-      conta de acesso a rede<br/>
+      Conta de acesso a rede<br/>
       <div style="margin-left: 20px;">
         <strong>login:</strong> ${loginHandle}<br/>
         <strong>senha:</strong> inicial1<br/>
       </div>
-      conta de e-mail institucional<br/>
+      Conta de e-mail institucional<br/>
       <div style="margin-left: 20px;">
         <strong>login:</strong> ${fullEmail}<br/>
         <strong>senha:</strong> inicial1<br/>
       </div><br/>
-      <strong>Obs:</strong> será solicitado a trocas das senhas no primeiro acesso.<br/>
+      <strong>Obs:</strong><br/>
+      Será solicitado a trocas das senhas no primeiro acesso.<br/>
       Os detalhes e orientações para o primeiro acesso estão descritos no <strong>INFORME-${formattedNumber}</strong> em anexo.<br/><br/>
       Att,<br/>
       Daniel Segatto Conti de Matos

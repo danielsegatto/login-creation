@@ -2,13 +2,13 @@ import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { formatLogin } from '../utils/templates';
 
-const API_KEY = 'aiVT5kEp6kAVYTjRsO0Bp6VucphUDpXK';
+const API_KEY = process.env.REACT_APP_CONVERT_API_KEY;
 
 /**
  * Internal helper to generate a Word Blob from the template.
  */
 const generateWordBlob = async (data) => {
-  const response = await fetch('/informe_template.docx');
+  const response = await fetch(`${process.env.PUBLIC_URL}/informe_template.docx`);
   if (!response.ok) throw new Error("Template not found in public folder");
   
   const arrayBuffer = await response.arrayBuffer();
