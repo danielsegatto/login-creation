@@ -7,43 +7,31 @@ import ResultDisplay from './components/ResultDisplay';
 import './styles.css';
 
 function App() {
-  // State Management
-  const [name, setName] = useState('Geiza Maria Da Cruz Oliveira');
-  const [surnameIndex, setSurnameIndex] = useState(4);
-  const [selectedDept, setSelectedDept] = useState('sedh');
-  const [informeNumber, setInformeNumber] = useInformeNumber();
+ const [name, setName] = useState(''); 
+const [surnameIndex, setSurnameIndex] = useState(null); 
+const [selectedDept, setSelectedDept] = useState(''); 
+const [informeNumber, setInformeNumber] = useInformeNumber(); 
   
-  const [outputs, setOutputs] = useState({ html1: '', html2: '' });
+  const [results, setResults] = useState({});
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Data package for services
-  const currentData = { name, surnameIndex, selectedDept, informeNumber };
+  // 2. Data Package for Services
+  const currentData = { 
+    name, 
+    surnameIndex, 
+    department: selectedDept, // Aligning naming with template expectations
+    selectedDept, 
+    informeNumber 
+  };
 
-  // Event Handlers
+  // 3. Event Handlers 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const resultData = getTemplates(currentData);
+    setResults(resultData);
     
-    // getTemplates expects a property named 'department'
-    const data = { 
-      name, 
-      department: selectedDept, // Map selectedDept to department
-      surnameIndex, 
-      informeNumber 
-    };
-    
-    const result = getTemplates(data);
-    setOutputs({ html1: result.htmlText, html2: result.htmlText2 });
-    
+    // Auto-increment the counter for the next user 
     setInformeNumber(prev => prev + 1);
-  };  
-
-  const handleDownloadWord = async () => {
-    try {
-      await documentService.downloadWord(currentData);
-    } catch (error) {
-      console.error(error);
-      alert("Error generating Word document.");
-    }
   };
 
   const handleDownloadPdf = async () => {
@@ -51,27 +39,34 @@ function App() {
     try {
       await documentService.downloadAsPdf(currentData);
     } catch (error) {
-      console.error(error);
-      alert(`PDF conversion failed: ${error.message}`);
+      console.error("PDF Error:", error);
+      alert(`Could not generate PDF: ${error.message}`);
     } finally {
       setIsGenerating(false);
     }
   };
 
-  // Grouped props for cleaner JSX
+  // 4. Grouped props for cleaner JSX 
   const formState = { name, surnameIndex, selectedDept, informeNumber };
-  const formActions = { setName, setSurnameIndex, setSelectedDept, setInformeNumber, handleSubmit };
+  const formActions = { 
+    setName, 
+    setSurnameIndex, 
+    setSelectedDept, 
+    setInformeNumber, 
+    handleSubmit 
+  };
 
   return (
     <div style={{ padding: '30px', fontFamily: 'sans-serif', maxWidth: '650px', margin: '0 auto' }}>
       <h2 style={{ textAlign: 'center' }}>Institutional Access Tool</h2>
       
+      {/* Input Layer */}
       <DocumentForm state={formState} actions={formActions} />
       
+      {/* Output & Actions Layer  */}
       <ResultDisplay 
-        outputs={outputs} 
+        results={results} 
         isGenerating={isGenerating}
-        onDownloadWord={handleDownloadWord}
         onDownloadPdf={handleDownloadPdf}
       />
     </div>

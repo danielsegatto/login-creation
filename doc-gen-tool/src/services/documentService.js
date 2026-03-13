@@ -1,11 +1,12 @@
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
-import { saveAs } from 'file-saver';
 import { formatLogin } from '../utils/templates';
 
 const API_KEY = 'aiVT5kEp6kAVYTjRsO0Bp6VucphUDpXK';
 
-// Private helper function
+/**
+ * Internal helper to generate a Word Blob from the template.
+ */
 const generateWordBlob = async (data) => {
   const response = await fetch('/informe_template.docx');
   if (!response.ok) throw new Error("Template not found in public folder");
@@ -14,12 +15,9 @@ const generateWordBlob = async (data) => {
   const zip = new PizZip(arrayBuffer);
   const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
 
-  const currentLogin = formatLogin(data.name, data.surnameIndex);
-  const formattedNumber = data.informeNumber.toString().padStart(3, '0');
-
   doc.render({
-    informeNumber: formattedNumber,
-    loginHandle: currentLogin,
+    informeNumber: data.informeNumber.toString().padStart(3, '0'),
+    loginHandle: formatLogin(data.name, data.surnameIndex),
     department: data.selectedDept.toLowerCase()
   });
 
@@ -29,16 +27,13 @@ const generateWordBlob = async (data) => {
   });
 };
 
-// Public Service Methods
 export const documentService = {
-  downloadWord: async (data) => {
-    const blob = await generateWordBlob(data);
-    const formattedNumber = data.informeNumber.toString().padStart(3, '0');
-    saveAs(blob, `INFORME_${formattedNumber}_${data.name.replace(/\s+/g, '_')}.docx`);
-  },
-
+  /**
+   * Generates a DOCX and converts it to PDF via ConvertAPI.
+   */
   downloadAsPdf: async (data) => {
     const docxBlob = await generateWordBlob(data);
+    
     const formData = new FormData();
     formData.append('File', docxBlob, 'document.docx');
     formData.append('StoreFile', 'false'); 
@@ -62,15 +57,13 @@ export const documentService = {
     const base64Data = result.Files[0].FileData;
     const byteCharacters = atob(base64Data);
     const byteNumbers = new Array(byteCharacters.length);
-    
     for (let i = 0; i < byteCharacters.length; i++) {
       byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
     
-    const byteArray = new Uint8Array(byteNumbers);
-    const pdfBlob = new Blob([byteArray], { type: 'application/pdf' });
-
+    const pdfBlob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
     const localUrl = window.URL.createObjectURL(pdfBlob);
+    
     const link = document.createElement('a');
     link.href = localUrl;
     link.download = `INFORME_${data.informeNumber.toString().padStart(3, '0')}_${data.name.replace(/\s+/g, '_')}.pdf`;
