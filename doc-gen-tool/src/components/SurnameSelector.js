@@ -1,41 +1,35 @@
 import React from 'react';
 
-/**
- * Component to allow selection of a specific surname from a full name.
- * @param {string} name - The full name to split.
- * @param {number} surnameIndex - The currently selected index.
- * @param {function} setSurnameIndex - Function to update the selected index.
- */
 const SurnameSelector = ({ name, surnameIndex, setSurnameIndex }) => {
-  const nameParts = name.trim().split(/\s+/).filter(p => p.length > 0);
+  const parts = name.trim().split(/\s+/).filter(p => p.length > 0);
 
-  // If there's only one name, we don't need selection buttons
-  if (nameParts.length < 2) return null;
+  // Don't show anything if there's only one name
+  if (parts.length < 2) return null;
 
   return (
-    <div className="form-group">
-      <label><small>Select word for Login Surname:</small></label>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '5px' }}>
-        {nameParts.map((part, index) => (
-          <button
-            key={index}
-            type="button"
-            disabled={index === 0} // First name usually isn't the surname
-            onClick={() => setSurnameIndex(index)}
-            style={{
-              padding: '4px 8px', 
-              fontSize: '12px', 
-              cursor: index === 0 ? 'not-allowed' : 'pointer',
-              backgroundColor: surnameIndex === index ? '#007bff' : '#eee',
-              color: surnameIndex === index ? 'white' : '#333',
-              border: '1px solid #ccc', 
-              borderRadius: '3px'
-            }}
-          >
-            {part}
-          </button>
-        ))}
+    <div className="form-group" style={{ marginTop: '15px' }}>
+      <div className="surname-container">
+        {parts.map((word, index) => {
+          // Skip the first name (index 0) as it's always used
+          if (index === 0) return null;
+
+          const isActive = surnameIndex === index;
+
+          return (
+            <button
+              key={index}
+              type="button"
+              className={`surname-btn ${isActive ? 'active' : ''}`}
+              onClick={() => setSurnameIndex(index)}
+            >
+              {word.toUpperCase()}
+            </button>
+          );
+        })}
       </div>
+      <p style={{ fontSize: '11px', color: '#888', marginTop: '8px' }}>
+        * O login será gerado como: <strong>{parts[0].toLowerCase()}.{(parts[surnameIndex] || parts[parts.length-1]).toLowerCase()}</strong>
+      </p>
     </div>
   );
 };

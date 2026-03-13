@@ -1,0 +1,153 @@
+/* Reset and Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: #f0f2f5;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Start from top with padding */
+  min-height: 100vh;
+  padding-top: 50px;
+}
+
+/* The Card Container */
+.app-container {
+  background: #ffffff;
+  width: 100%;
+  max-width: 650px;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 51, 102, 0.1);
+  border-top: 6px solid #003366; /* Official SEG Dark Blue */
+}
+
+header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+h1 {
+  color: #003366;
+  font-size: 26px;
+  margin: 0;
+}
+
+header p {
+  color: #6c757d;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-top: 8px;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+input[type="text"], 
+input[type="number"] {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid #e1e4e8;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #0099ff; /* SEG Light Blue */
+}
+
+/* Department Grid Selection */
+.dept-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.dept-option {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border: 2px solid #f0f2f5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dept-option:hover {
+  background-color: #f1f8ff;
+  border-color: #0099ff;
+}
+
+.dept-option input {
+  margin-right: 10px;
+}
+
+/* Main Action Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  background-color: #002244;
+}
+
+/* Surname Selector Styles */
+.surname-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.surname-btn {
+  padding: 8px 16px;
+  border: 2px solid #e1e4e8;
+  background-color: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  transition: all 0.2s ease;
+}
+
+.surname-btn:hover {
+  border-color: #0099ff;
+  color: #003366;
+}
+
+/* The Highlighted State */
+.surname-btn.active {
+  background-color: #0099ff;
+  border-color: #0099ff;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 153, 255, 0.3);
+}

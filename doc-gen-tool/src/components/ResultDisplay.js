@@ -40,11 +40,11 @@ const ResultDisplay = ({ results, isGenerating, onDownloadPdf }) => {
       
       {/* 1. Grid of one-click copy fields */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '20px' }}>
-        <CopyableField label="First Name" value={results.firstName} />
-        <CopyableField label="Surname" value={results.surnameRest} />
-        <CopyableField label="Login" value={results.loginHandle} />
-        <CopyableField label="E-mail" value={results.email} />
-        <CopyableField label="Password" value={results.password} />
+        <CopyableField value={results.firstName} />
+        <CopyableField value={results.surnameRest} />
+        <CopyableField value={results.loginHandle} />
+        <CopyableField value={results.email} />
+        <CopyableField value={results.password} />
       </div>
 
       {/* 2. Interactive text blocks without labels */}
@@ -74,18 +74,20 @@ const ResultDisplay = ({ results, isGenerating, onDownloadPdf }) => {
         disabled={isGenerating}
         style={{ 
           width: '100%', 
-          backgroundColor: '#d32f2f', 
+          backgroundColor: isGenerating ? '#ccc' : '#003366', 
           color: 'white', 
-          padding: '14px', 
+          padding: '16px', 
           border: 'none', 
-          borderRadius: '4px', 
+          borderRadius: '6px', 
           cursor: isGenerating ? 'not-allowed' : 'pointer',
           fontWeight: 'bold',
-          fontSize: '15px',
-          marginTop: '10px'
+          fontSize: '16px',
+          letterSpacing: '1px',
+          transition: 'background-color 0.3s ease',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
         }}
       >
-        {isGenerating ? 'GENERATING PDF...' : 'DOWNLOAD OFFICIAL PDF'}
+        {isGenerating ? 'PROCESSANDO DOCUMENTO...' : 'GERAR PDF'}
       </button>
     </div>
   );

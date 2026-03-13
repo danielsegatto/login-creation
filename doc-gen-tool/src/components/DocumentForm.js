@@ -1,7 +1,7 @@
 import React from 'react';
 import SurnameSelector from './SurnameSelector';
 
-const DEPARTMENTS = ["seg", "sedh", "casa civil", "casa militar", "secom", "vice"];
+const departments = ['SEG', 'SEDH', 'CASA CIVIL', 'CASA MILITAR', 'SECOM', 'VICE'];
 
 /**
  * The primary input form for generating institutional access data.
@@ -10,63 +10,56 @@ const DEPARTMENTS = ["seg", "sedh", "casa civil", "casa militar", "secom", "vice
  */
 const DocumentForm = ({ state, actions }) => {
   const { name, surnameIndex, selectedDept, informeNumber } = state;
-  const { setName, setSurnameIndex, setSelectedDept, setInformeNumber, handleSubmit } = actions;
+  const { setName, setSurnameIndex, setSelectedDept, setInformeNumber, onSubmit } = actions;
 
   return (
-    <form onSubmit={handleSubmit} className="tool-form">
-      {/* Name Input */}
+    <form onSubmit={onSubmit}>
       <div className="form-group">
-        <label><strong>Name:</strong></label>
+        <label>NOME COMPLETO:</label>
         <input 
           type="text" 
           value={name} 
           onChange={(e) => setName(e.target.value)} 
-          style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }}
           required 
         />
       </div>
 
-      {/* Surname Selection Logic */}
       <SurnameSelector 
         name={name} 
         surnameIndex={surnameIndex} 
         setSurnameIndex={setSurnameIndex} 
       />
 
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-        {/* Department Selection */}
-        <div className="form-group" style={{ flex: '2', minWidth: '200px' }}>
-          <label><strong>Department:</strong></label>
+      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', marginTop: '20px' }}>
+        <div className="form-group" style={{ flex: '2', minWidth: '280px' }}>
           <div className="dept-grid">
-            {DEPARTMENTS.map(dept => (
-              <div key={dept} className="dept-item">
+            {departments.map(dept => (
+              <label key={dept} className="dept-option">
                 <input 
                   type="radio" 
-                  name="dept" 
-                  value={dept} 
-                  checked={selectedDept === dept} 
-                  onChange={(e) => setSelectedDept(e.target.value)} 
-                  required 
+                  name="dept"
+                  value={dept.toLowerCase()} 
+                  checked={selectedDept === dept.toLowerCase()}
+                  onChange={(e) => setSelectedDept(e.target.value)}
                 />
-                <label style={{ textTransform: 'uppercase' }}>{dept}</label>
-              </div>
+                <span style={{ fontSize: '12px', fontWeight: 'bold' }}>{dept}</span>
+              </label>
             ))}
           </div>
         </div>
 
-        {/* Informe Number Control */}
-        <div className="form-group" style={{ flex: '1', minWidth: '120px' }}>
-          <label><strong>Next INFORME:</strong></label>
+        <div className="form-group" style={{ flex: '1', minWidth: '100px' }}>
+          <label>Nº INFORME:</label>
           <input 
             type="number" 
             value={informeNumber} 
-            onChange={(e) => setInformeNumber(parseInt(e.target.value, 10) || 0)}
-            style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+            onChange={(e) => setInformeNumber(parseInt(e.target.value) || 0)} 
+            required
           />
         </div>
       </div>
 
-      <button type="submit" className="primary-btn">Generate Text Results</button>
+      <button type="submit" className="btn-primary">Gerar</button>
     </form>
   );
 };

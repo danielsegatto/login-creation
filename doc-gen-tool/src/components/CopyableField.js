@@ -22,15 +22,6 @@ const CopyableField = ({ label, value }) => {
 
   return (
     <div style={{ flex: '1', minWidth: '150px', marginBottom: '10px' }}>
-      <label style={{ 
-        fontSize: '11px', 
-        fontWeight: 'bold', 
-        color: '#666', 
-        display: 'block',
-        marginBottom: '4px'
-      }}>
-        {label.toUpperCase()}
-      </label>
       <div 
         onClick={handleCopy}
         title="Click to copy"
