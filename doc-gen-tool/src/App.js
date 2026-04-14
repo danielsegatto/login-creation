@@ -43,12 +43,15 @@ function App() {
   };
 
   // 3. Handlers
-  const handleGeneratePdf = () => {
+  const handleGeneratePdf = async () => {
     setError(null);
+    setIsGenerating(true);
     try {
-      documentService.downloadAsPdf(formState);
+      await documentService.downloadAsPdf(formState);
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsGenerating(false);
     }
   };
 
