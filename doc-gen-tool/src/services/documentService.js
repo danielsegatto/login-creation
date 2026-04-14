@@ -84,6 +84,7 @@ export const documentService = {
             convert_file: {
               operation: 'convert',
               input: 'import_file',
+              input_format: 'docx',
               output_format: 'pdf'
             },
             export_file: {
