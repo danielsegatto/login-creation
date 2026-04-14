@@ -85,7 +85,8 @@ export const documentService = {
               operation: 'convert',
               input: 'import_file',
               input_format: 'docx',
-              output_format: 'pdf'
+              output_format: 'pdf',
+              engine: 'libreoffice'
             },
             export_file: {
               operation: 'export/url',
