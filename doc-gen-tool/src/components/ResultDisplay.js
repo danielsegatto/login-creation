@@ -72,14 +72,15 @@ const ResultDisplay = ({ results, isGenerating, onDownloadPdf, onDownloadDocx })
       <div style={{ display: 'flex', gap: '10px' }}>
         <button
           onClick={onDownloadPdf}
+          disabled={isGenerating}
           style={{
             flex: 1,
-            backgroundColor: '#003366',
+            backgroundColor: isGenerating ? '#ccc' : '#003366',
             color: 'white',
             padding: '16px',
             border: 'none',
             borderRadius: '6px',
-            cursor: 'pointer',
+            cursor: isGenerating ? 'not-allowed' : 'pointer',
             fontWeight: 'bold',
             fontSize: '16px',
             letterSpacing: '1px',
@@ -87,7 +88,7 @@ const ResultDisplay = ({ results, isGenerating, onDownloadPdf, onDownloadDocx })
             boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
           }}
         >
-          GERAR PDF
+          {isGenerating ? 'PROCESSANDO PDF...' : 'GERAR PDF'}
         </button>
         <button
           onClick={onDownloadDocx}
