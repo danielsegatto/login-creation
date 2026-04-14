@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import DocumentForm from './components/DocumentForm';
 import ResultDisplay from './components/ResultDisplay';
+import ErrorDisplay from './components/ErrorDisplay';
 import { useInformeNumber } from './hooks/useInformeNumber';
 import { documentService } from './services/documentService';
 import { getTemplates, toTitleCase } from './utils/templates';
@@ -13,6 +14,7 @@ function App() {
   const [informeNumber, setInformeNumber] = useInformeNumber();
   const [results, setResults] = useState({});
   const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState(null);
 
   // 2. Prepare Form State and Actions
   const formState = { name, surnameIndex, selectedDept, informeNumber };
@@ -42,11 +44,12 @@ function App() {
 
   // 3. PDF Generation Handler
   const handleGeneratePdf = async () => {
+    setError(null);
     setIsGenerating(true);
     try {
       await documentService.downloadAsPdf(formState);
-    } catch (error) {
-      alert("Erro ao gerar PDF: " + error.message);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsGenerating(false);
     }
@@ -60,10 +63,15 @@ function App() {
 
       <DocumentForm state={formState} actions={formActions} />
 
-      <ResultDisplay 
-        results={results} 
-        isGenerating={isGenerating} 
-        onDownloadPdf={handleGeneratePdf} 
+      <ErrorDisplay
+        error={error}
+        onDismiss={() => setError(null)}
+      />
+
+      <ResultDisplay
+        results={results}
+        isGenerating={isGenerating}
+        onDownloadPdf={handleGeneratePdf}
       />
     </div>
   );

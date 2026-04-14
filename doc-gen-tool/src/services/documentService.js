@@ -46,7 +46,12 @@ export const documentService = {
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`API Error: ${errorText}`);
+      try {
+        const errorJson = JSON.parse(errorText);
+        throw new Error(errorJson.Message || errorJson.message || `API Error: ${errorText}`);
+      } catch (parseErr) {
+        throw new Error(`PDF Conversion Error: ${errorText}`);
+      }
     }
 
     const result = await response.json();
