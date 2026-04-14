@@ -1,6 +1,5 @@
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
-import mammoth from 'mammoth';
 import { formatLogin } from '../utils/templates';
 
 /**
@@ -28,54 +27,117 @@ const generateWordBlob = async (data) => {
 
 export const documentService = {
   /**
-   * Converts the filled DOCX to HTML via mammoth, then opens a print dialog
-   * so the browser generates the PDF — 100% free, no external API.
+   * Converts DOCX to PDF using CloudConvert's free API (25 conversions/day, no expiration).
    */
   downloadAsPdf: async (data) => {
     const formattedNumber = data.informeNumber.toString().padStart(3, '0');
     const filename = `INFORME_${formattedNumber}_${data.name.replace(/\s+/g, '_')}`;
 
+    const apiKey = process.env.REACT_APP_CLOUDCONVERT_API_KEY;
+    if (!apiKey) {
+      throw new Error('CloudConvert API key not configured. Please add REACT_APP_CLOUDCONVERT_API_KEY to your environment.');
+    }
+
     const docxBlob = await generateWordBlob(data);
-    const arrayBuffer = await docxBlob.arrayBuffer();
 
-    const result = await mammoth.convertToHtml({ arrayBuffer });
-    const bodyHtml = result.value;
+    // Step 1: Upload the DOCX file
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', docxBlob, 'document.docx');
 
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8"/>
-  <title>${filename}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Arial, sans-serif;
-      font-size: 12pt;
-      color: #000;
-      padding: 2.5cm;
-      max-width: 21cm;
-      margin: 0 auto;
+    const uploadRes = await fetch('https://api.cloudconvert.com/v2/import/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      body: uploadFormData
+    });
+
+    if (!uploadRes.ok) {
+      const errorData = await uploadRes.json();
+      throw new Error(errorData.message || 'Failed to upload file to CloudConvert');
     }
-    p { margin-bottom: 0.4em; line-height: 1.5; }
-    table { border-collapse: collapse; width: 100%; margin-bottom: 0.8em; }
-    td, th { padding: 4px 8px; border: 1px solid #ccc; }
-    @media print {
-      body { padding: 0; }
-      @page { margin: 2.5cm; size: A4; }
+
+    const uploadData = await uploadRes.json();
+    const fileId = uploadData.data.id;
+
+    // Step 2: Create a conversion job
+    const convertRes = await fetch('https://api.cloudconvert.com/v2/jobs', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        tasks: {
+          import_file: {
+            operation: 'import/upload',
+            file_id: fileId
+          },
+          convert_file: {
+            operation: 'convert',
+            input: 'import_file',
+            output_format: 'pdf'
+          },
+          export_file: {
+            operation: 'export/url',
+            input: 'convert_file'
+          }
+        }
+      })
+    });
+
+    if (!convertRes.ok) {
+      const errorData = await convertRes.json();
+      throw new Error(errorData.message || 'Failed to convert file');
     }
-  </style>
-</head>
-<body>
-  ${bodyHtml}
-  <script>
-    window.onload = function() {
-      window.print();
-    };
-  </script>
-</body>
-</html>`);
-    printWindow.document.close();
+
+    const jobData = await convertRes.json();
+    const jobId = jobData.data.id;
+
+    // Step 3: Poll for completion
+    let completed = false;
+    let attempts = 0;
+    const maxAttempts = 60; // 60 seconds max wait
+    let pdfUrl = null;
+
+    while (!completed && attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      attempts++;
+
+      const statusRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobId}`, {
+        headers: { 'Authorization': `Bearer ${apiKey}` }
+      });
+
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        if (statusData.data.status === 'finished') {
+          completed = true;
+          // Get the export file URL
+          const exportTask = statusData.data.tasks.find(t => t.name === 'export_file');
+          if (exportTask && exportTask.result && exportTask.result.files && exportTask.result.files[0]) {
+            pdfUrl = exportTask.result.files[0].url;
+          }
+        } else if (statusData.data.status === 'failed') {
+          throw new Error('CloudConvert conversion failed');
+        }
+      }
+    }
+
+    if (!pdfUrl) {
+      throw new Error('Conversion timeout or no PDF generated');
+    }
+
+    // Step 4: Download the PDF
+    const pdfRes = await fetch(pdfUrl);
+    if (!pdfRes.ok) throw new Error('Failed to download PDF');
+
+    const pdfBlob = await pdfRes.blob();
+    const localUrl = window.URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = localUrl;
+    link.download = `${filename}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(localUrl);
   },
 
   /**
