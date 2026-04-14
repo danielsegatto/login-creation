@@ -11,7 +11,7 @@ const boxStyle = {
   transition: 'background-color 0.2s'
 };
 
-const ResultDisplay = ({ results, isGenerating, onDownloadPdf }) => {
+const ResultDisplay = ({ results, isGenerating, onDownloadPdf, onDownloadDocx }) => {
   if (!results.loginHandle) return null;
 
   const handleCopyText = (htmlContent, label) => {
@@ -68,27 +68,48 @@ const ResultDisplay = ({ results, isGenerating, onDownloadPdf }) => {
         />
       </div>
 
-      {/* 3. Main Action Button */}
-      <button 
-        onClick={onDownloadPdf} 
-        disabled={isGenerating}
-        style={{ 
-          width: '100%', 
-          backgroundColor: isGenerating ? '#ccc' : '#003366', 
-          color: 'white', 
-          padding: '16px', 
-          border: 'none', 
-          borderRadius: '6px', 
-          cursor: isGenerating ? 'not-allowed' : 'pointer',
-          fontWeight: 'bold',
-          fontSize: '16px',
-          letterSpacing: '1px',
-          transition: 'background-color 0.3s ease',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-        }}
-      >
-        {isGenerating ? 'PROCESSANDO DOCUMENTO...' : 'GERAR PDF'}
-      </button>
+      {/* 3. Action Buttons */}
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button
+          onClick={onDownloadPdf}
+          style={{
+            flex: 1,
+            backgroundColor: '#003366',
+            color: 'white',
+            padding: '16px',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            letterSpacing: '1px',
+            transition: 'background-color 0.3s ease',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}
+        >
+          GERAR PDF
+        </button>
+        <button
+          onClick={onDownloadDocx}
+          disabled={isGenerating}
+          style={{
+            flex: 1,
+            backgroundColor: isGenerating ? '#ccc' : '#1a5c1a',
+            color: 'white',
+            padding: '16px',
+            border: 'none',
+            borderRadius: '6px',
+            cursor: isGenerating ? 'not-allowed' : 'pointer',
+            fontWeight: 'bold',
+            fontSize: '16px',
+            letterSpacing: '1px',
+            transition: 'background-color 0.3s ease',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+          }}
+        >
+          {isGenerating ? 'PROCESSANDO...' : 'BAIXAR DOCX'}
+        </button>
+      </div>
     </div>
   );
 };

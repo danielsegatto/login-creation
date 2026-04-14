@@ -42,12 +42,21 @@ function App() {
     }
   };
 
-  // 3. PDF Generation Handler
-  const handleGeneratePdf = async () => {
+  // 3. Handlers
+  const handleGeneratePdf = () => {
+    setError(null);
+    try {
+      documentService.downloadAsPdf(formState);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleDownloadDocx = async () => {
     setError(null);
     setIsGenerating(true);
     try {
-      await documentService.downloadAsPdf(formState);
+      await documentService.downloadAsDocx(formState);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -72,6 +81,7 @@ function App() {
         results={results}
         isGenerating={isGenerating}
         onDownloadPdf={handleGeneratePdf}
+        onDownloadDocx={handleDownloadDocx}
       />
     </div>
   );
