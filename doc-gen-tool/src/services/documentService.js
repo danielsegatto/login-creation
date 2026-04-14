@@ -99,6 +99,16 @@ export const documentService = {
       if (!convertRes.ok) {
         const errorText = await convertRes.text();
         console.error('Conversion job creation failed:', convertRes.status, errorText);
+
+        // Handle specific error codes
+        if (convertRes.status === 402) {
+          // Check if it's a parallel job limit error
+          if (errorText.includes('PARALLEL_JOB_LIMIT_EXCEEDED')) {
+            throw new Error('Too many conversions running. Please wait for the current conversion to finish before starting another.');
+          }
+          throw new Error('Payment required. Your free tier may have reached its limit. Please try again later.');
+        }
+
         throw new Error(`Conversion failed (${convertRes.status}). API key may be invalid or limit exceeded.`);
       }
 
