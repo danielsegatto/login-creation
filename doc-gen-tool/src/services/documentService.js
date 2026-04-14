@@ -35,109 +35,154 @@ export const documentService = {
 
     const apiKey = process.env.REACT_APP_CLOUDCONVERT_API_KEY;
     if (!apiKey) {
-      throw new Error('CloudConvert API key not configured. Please add REACT_APP_CLOUDCONVERT_API_KEY to your environment.');
+      throw new Error('CloudConvert API key not configured. Please contact the administrator.');
     }
 
-    const docxBlob = await generateWordBlob(data);
+    try {
+      console.log('Starting DOCX to PDF conversion...');
 
-    // Step 1: Upload the DOCX file
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', docxBlob, 'document.docx');
+      const docxBlob = await generateWordBlob(data);
+      console.log('DOCX generated, uploading to CloudConvert...');
 
-    const uploadRes = await fetch('https://api.cloudconvert.com/v2/import/upload', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}` },
-      body: uploadFormData
-    });
+      // Step 1: Upload the DOCX file
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', docxBlob, 'document.docx');
 
-    if (!uploadRes.ok) {
-      const errorData = await uploadRes.json();
-      throw new Error(errorData.message || 'Failed to upload file to CloudConvert');
-    }
-
-    const uploadData = await uploadRes.json();
-    const fileId = uploadData.data.id;
-
-    // Step 2: Create a conversion job
-    const convertRes = await fetch('https://api.cloudconvert.com/v2/jobs', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        tasks: {
-          import_file: {
-            operation: 'import/upload',
-            file_id: fileId
-          },
-          convert_file: {
-            operation: 'convert',
-            input: 'import_file',
-            output_format: 'pdf'
-          },
-          export_file: {
-            operation: 'export/url',
-            input: 'convert_file'
-          }
-        }
-      })
-    });
-
-    if (!convertRes.ok) {
-      const errorData = await convertRes.json();
-      throw new Error(errorData.message || 'Failed to convert file');
-    }
-
-    const jobData = await convertRes.json();
-    const jobId = jobData.data.id;
-
-    // Step 3: Poll for completion
-    let completed = false;
-    let attempts = 0;
-    const maxAttempts = 60; // 60 seconds max wait
-    let pdfUrl = null;
-
-    while (!completed && attempts < maxAttempts) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
-      attempts++;
-
-      const statusRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobId}`, {
-        headers: { 'Authorization': `Bearer ${apiKey}` }
+      const uploadRes = await fetch('https://api.cloudconvert.com/v2/import/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${apiKey}` },
+        body: uploadFormData
       });
 
-      if (statusRes.ok) {
-        const statusData = await statusRes.json();
-        if (statusData.data.status === 'finished') {
-          completed = true;
-          // Get the export file URL
-          const exportTask = statusData.data.tasks.find(t => t.name === 'export_file');
-          if (exportTask && exportTask.result && exportTask.result.files && exportTask.result.files[0]) {
-            pdfUrl = exportTask.result.files[0].url;
+      if (!uploadRes.ok) {
+        const errorText = await uploadRes.text();
+        console.error('Upload failed:', uploadRes.status, errorText);
+        throw new Error(`Upload failed (${uploadRes.status}). Check your API key or try again.`);
+      }
+
+      const uploadData = await uploadRes.json();
+      const fileId = uploadData.data?.id;
+      if (!fileId) {
+        throw new Error('No file ID returned from CloudConvert upload');
+      }
+      console.log('File uploaded successfully, file ID:', fileId);
+
+      // Step 2: Create a conversion job
+      console.log('Creating conversion job...');
+      const convertRes = await fetch('https://api.cloudconvert.com/v2/jobs', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          tasks: {
+            import_file: {
+              operation: 'import/upload',
+              file_id: fileId
+            },
+            convert_file: {
+              operation: 'convert',
+              input: 'import_file',
+              output_format: 'pdf'
+            },
+            export_file: {
+              operation: 'export/url',
+              input: 'convert_file'
+            }
           }
-        } else if (statusData.data.status === 'failed') {
-          throw new Error('CloudConvert conversion failed');
+        })
+      });
+
+      if (!convertRes.ok) {
+        const errorText = await convertRes.text();
+        console.error('Conversion job creation failed:', convertRes.status, errorText);
+        throw new Error(`Conversion failed (${convertRes.status}). API key may be invalid or limit exceeded.`);
+      }
+
+      const jobData = await convertRes.json();
+      const jobId = jobData.data?.id;
+      if (!jobId) {
+        throw new Error('No job ID returned from CloudConvert');
+      }
+      console.log('Conversion job created, job ID:', jobId);
+
+      // Step 3: Poll for completion
+      let completed = false;
+      let attempts = 0;
+      const maxAttempts = 120; // 120 seconds timeout
+      let pdfUrl = null;
+
+      while (!completed && attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+        attempts++;
+
+        if (attempts % 10 === 0) {
+          console.log(`Polling... attempt ${attempts}/${maxAttempts}`);
+        }
+
+        try {
+          const statusRes = await fetch(`https://api.cloudconvert.com/v2/jobs/${jobId}`, {
+            headers: { 'Authorization': `Bearer ${apiKey}` }
+          });
+
+          if (!statusRes.ok) {
+            console.error('Status check failed:', statusRes.status);
+            continue;
+          }
+
+          const statusData = await statusRes.json();
+          const jobStatus = statusData.data?.status;
+          console.log(`Job status: ${jobStatus}`);
+
+          if (jobStatus === 'finished') {
+            completed = true;
+            const exportTask = statusData.data?.tasks?.find(t => t.name === 'export_file');
+            if (exportTask?.result?.files?.[0]) {
+              pdfUrl = exportTask.result.files[0].url;
+              console.log('Conversion complete, PDF URL obtained');
+            }
+          } else if (jobStatus === 'failed') {
+            const errorMsg = statusData.data?.tasks?.find(t => t.status === 'failed')?.message || 'Unknown error';
+            console.error('Job failed:', errorMsg);
+            throw new Error(`CloudConvert conversion failed: ${errorMsg}`);
+          }
+        } catch (err) {
+          console.error('Error during status check:', err.message);
         }
       }
+
+      if (!completed) {
+        console.error('Conversion timeout after 120 seconds');
+        throw new Error('PDF conversion is taking too long. CloudConvert may be overloaded. Please try again.');
+      }
+
+      if (!pdfUrl) {
+        throw new Error('PDF generated but no download URL found');
+      }
+
+      // Step 4: Download the PDF
+      console.log('Downloading PDF...');
+      const pdfRes = await fetch(pdfUrl);
+      if (!pdfRes.ok) {
+        throw new Error(`Failed to download PDF (${pdfRes.status})`);
+      }
+
+      const pdfBlob = await pdfRes.blob();
+      const localUrl = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = localUrl;
+      link.download = `${filename}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(localUrl);
+
+      console.log('PDF download complete!');
+    } catch (err) {
+      console.error('PDF conversion error:', err);
+      throw err;
     }
-
-    if (!pdfUrl) {
-      throw new Error('Conversion timeout or no PDF generated');
-    }
-
-    // Step 4: Download the PDF
-    const pdfRes = await fetch(pdfUrl);
-    if (!pdfRes.ok) throw new Error('Failed to download PDF');
-
-    const pdfBlob = await pdfRes.blob();
-    const localUrl = window.URL.createObjectURL(pdfBlob);
-    const link = document.createElement('a');
-    link.href = localUrl;
-    link.download = `${filename}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(localUrl);
   },
 
   /**
