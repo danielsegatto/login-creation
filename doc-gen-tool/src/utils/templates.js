@@ -11,23 +11,33 @@ export const toTitleCase = (str) => {
 };
 
 /**
+ * Removes accents and special characters, keeping only ASCII letters/digits.
+ * e.g. "josé" → "jose", "ção" → "cao", "müller" → "muller"
+ */
+const sanitize = (str) =>
+  str
+    .normalize('NFD')                // decompose é → e + combining accent
+    .replace(/[\u0300-\u036f]/g, '') // strip the combining accent marks
+    .replace(/[^a-z0-9]/g, '');      // drop anything that isn't a-z or 0-9
+
+/**
  * Formats a login handle using the first name and a chosen surname word.
  * Defaults to the last word if no specific surname index is selected.
  */
 export const formatLogin = (fullName, surnameIndex) => {
   const parts = fullName.trim().toLowerCase().split(/\s+/).filter(p => p.length > 0);
-  
-  if (parts.length < 2) return parts[0] || 'user';
-  
-  const firstName = parts[0];
-  
+
+  if (parts.length < 2) return sanitize(parts[0]) || 'user';
+
+  const firstName = sanitize(parts[0]);
+
   let chosenSurname;
   if (surnameIndex !== null && surnameIndex !== undefined && parts[surnameIndex] && surnameIndex !== 0) {
-    chosenSurname = parts[surnameIndex];
+    chosenSurname = sanitize(parts[surnameIndex]);
   } else {
-    chosenSurname = parts[parts.length - 1];
+    chosenSurname = sanitize(parts[parts.length - 1]);
   }
-  
+
   return `${firstName}.${chosenSurname}`;
 };
 
